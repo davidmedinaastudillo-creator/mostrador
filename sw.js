@@ -1,6 +1,14 @@
 /* Service worker: guarda la app en el teléfono para que abra sin internet.
    La tasa no pasa por aquí (la app la guarda aparte y muestra la última conocida).
-   El nombre de la caché sale de version.js: al subir la versión, los teléfonos descartan la copia vieja. */
+
+   Cómo llegan las versiones nuevas (corregido en 1.1.1):
+   - La app registra este archivo con updateViaCache: 'none' y pide revisar al abrir, así que se
+     nota enseguida que version.js cambió (antes la caché HTTP de GitHub Pages, de 10 minutos,
+     lo escondía).
+   - La instalación descarga todo con cache: 'reload' (sin la caché HTTP): la versión nueva
+     entra completa, nunca mezclada con archivos de la anterior.
+   - Cada versión sirve solo su propia copia (primero la copia guardada); lo nuevo llega entero con
+     el siguiente version.js. La app se recarga sola cuando la versión nueva toma el control. */
 importScripts('version.js');
 var VERSION = 'mostrador-' + self.APP_VERSION;
 var ARCHIVOS = [
@@ -22,7 +30,9 @@ var ARCHIVOS = [
 self.addEventListener('install', function (e) {
   e.waitUntil(
     caches.open(VERSION)
-      .then(function (c) { return c.addAll(ARCHIVOS); })
+      .then(function (c) {
+        return c.addAll(ARCHIVOS.map(function (u) { return new Request(u, { cache: 'reload' }); }));
+      })
       .then(function () { return self.skipWaiting(); })
   );
 });
@@ -37,8 +47,6 @@ self.addEventListener('activate', function (e) {
   );
 });
 
-// Primero la copia guardada (abre al instante y sin conexión); en segundo plano se
-// busca la versión nueva para la próxima vez.
 self.addEventListener('fetch', function (e) {
   var pedido = e.request;
   if (pedido.method !== 'GET') return;
@@ -51,15 +59,11 @@ self.addEventListener('fetch', function (e) {
   e.respondWith(
     caches.open(VERSION).then(function (cache) {
       return cache.match(clave, { ignoreSearch: true }).then(function (guardado) {
-        var deRed = fetch(pedido).then(function (resp) {
-          if (resp && resp.ok && resp.type === 'basic') cache.put(clave, resp.clone());
+        if (guardado) return guardado;
+        return fetch(pedido).then(function (resp) {
+          if (resp && resp.ok && resp.type === 'basic' && pedido.mode !== 'navigate') cache.put(pedido, resp.clone());
           return resp;
-        }).catch(function () { return guardado; });
-        if (guardado) {
-          e.waitUntil(deRed.catch(function () {}));
-          return guardado;
-        }
-        return deRed;
+        });
       });
     })
   );

@@ -1327,9 +1327,37 @@
   // "Consultada hace X min" se mantiene al día mientras la app está abierta.
   setInterval(function () { if (doc.visibilityState === 'visible' && vistaActual === 'tasa') pintarTasa(); }, 60000);
 
+  // Versiones nuevas: se revisan al abrir sin pasar por la caché HTTP (GitHub Pages guarda 10 min)
+  // y, cuando la nueva toma el control, la app se recarga una vez. Si hay algo escrito sin guardar,
+  // en vez de recargar ofrece hacerlo, para no perderlo.
+  try {
+    if (sessionStorage.getItem('mostrador.actualizada')) {
+      sessionStorage.removeItem('mostrador.actualizada');
+      avisar('Mostrador se actualizó a la versión ' + (window.APP_VERSION || '') + '.');
+    }
+  } catch (e) {}
+
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    var teniaControlador = !!navigator.serviceWorker.controller;
+    var recargando = false;
+    var recargar = function () {
+      if (recargando) return;
+      recargando = true;
+      try { sessionStorage.setItem('mostrador.actualizada', '1'); } catch (e) {}
+      location.reload();
+    };
+    var hayAlgoEscrito = function () {
+      return pila.length > 0 || [vNombre, vTel, vMotivo, pNombre, pUsd, cUsd, cBs].some(function (i) { return i.value.trim() !== ''; });
+    };
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!teniaControlador) return;   // primera instalación: no hace falta recargar
+      if (hayAlgoEscrito()) avisar('Hay una versión nueva de Mostrador.', 'Actualizar', recargar, 20000);
+      else recargar();
+    });
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('sw.js').catch(function () {});
+      navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+        .then(function (reg) { return reg.update(); })
+        .catch(function () {});
     });
   }
 })();

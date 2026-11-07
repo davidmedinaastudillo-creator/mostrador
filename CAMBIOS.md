@@ -1,5 +1,11 @@
 # Cambios
 
+## 1.1.1 (2026-11-07)
+
+- Las versiones nuevas llegan al abrir la app. Antes podían tardar varias aperturas en aparecer
+  (por eso el calendario de la 1.1.0 no se veía todavía). Ahora la app se actualiza sola y avisa
+  "Mostrador se actualizó". Si estás escribiendo algo, en vez de recargar ofrece el botón *Actualizar*.
+
 ## 1.1.0 (2026-11-07)
 
 - **Calendario de tasas anteriores** en la pestaña Tasa: toca cualquier día desde enero de 2023
