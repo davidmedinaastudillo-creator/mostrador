@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="es-VE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://ve.dolarapi.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'">
+<title>Mostrador</title>
+<meta name="description" content="Registro de visitas con envío por WhatsApp, tasa BCV del dólar, calculadora y precios en dólares convertidos a bolívares.">
+<meta name="theme-color" content="#DCEFEB" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#06202B" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="iconos/icono-192.png" type="image/png">
+<link rel="apple-touch-icon" href="iconos/apple-touch-icon.png">
+<link rel="preload" href="fuentes/bricolage.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="estilos.css">
+<script src="tema.js"></script>
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-visitas" viewBox="0 0 24 24"><path d="M15 20v-1.5a4 4 0 0 0-4-4H6.5a4 4 0 0 0-4 4V20"/><circle cx="8.75" cy="7.5" r="3.75"/><path d="M19 8.5v6M22 11.5h-6"/></symbol>
+  <symbol id="i-tasa" viewBox="0 0 24 24"><path d="M3 17.5l5.5-5.5 4 4L21 7.5"/><path d="M15.5 7.5H21V13"/></symbol>
+  <symbol id="i-calc" viewBox="0 0 24 24"><rect x="4.5" y="2.5" width="15" height="19" rx="3"/><path d="M8 7h8M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18.5h.01M12 18.5h.01M15.5 18.5h.01"/></symbol>
+  <symbol id="i-precios" viewBox="0 0 24 24"><path d="M12.6 2.6a2 2 0 0 0-1.4-.6H4a2 2 0 0 0-2 2v7.2c0 .5.2 1 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z"/><circle cx="7.5" cy="7.5" r="1.6"/></symbol>
+  <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></symbol>
+  <symbol id="i-enviar" viewBox="0 0 24 24"><path d="M21.5 2.5 10.5 13.5"/><path d="M21.5 2.5 14.5 21.5l-4-8-8-4z"/></symbol>
+  <symbol id="i-contactos" viewBox="0 0 24 24"><rect x="4" y="2.5" width="16" height="19" rx="3"/><circle cx="12" cy="10" r="3"/><path d="M7.5 18a4.5 4.5 0 0 1 9 0"/></symbol>
+  <symbol id="i-actualizar" viewBox="0 0 24 24"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1L20.5 8.5"/><path d="M20.5 3.5v5h-5"/></symbol>
+  <symbol id="i-borrar" viewBox="0 0 24 24"><path d="M3.5 6.5h17M9 6.5V4.5h6v2M6 6.5l1 13.5h10l1-13.5M10 10.5v6M14 10.5v6"/></symbol>
+  <symbol id="i-compartir" viewBox="0 0 24 24"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></symbol>
+  <symbol id="i-exportar" viewBox="0 0 24 24"><path d="M12 3.5v11M7.5 10l4.5 4.5 4.5-4.5"/><path d="M4.5 16.5v2a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-2"/></symbol>
+  <symbol id="i-cerrar" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-retroceso" viewBox="0 0 24 24"><path d="M20.5 5.5H9.2a1.5 1.5 0 0 0-1.1.5L3 12l5.1 6a1.5 1.5 0 0 0 1.1.5h11.3a1 1 0 0 0 1-1v-11a1 1 0 0 0-1-1z"/><path d="m16.5 9.5-5 5M11.5 9.5l5 5"/></symbol>
+  <symbol id="i-mas" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-buscar" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/></symbol>
+  <symbol id="i-subio" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
+  <symbol id="i-bajo" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
+</svg>
+
+<div class="fondo" aria-hidden="true"></div>
+
+<header class="barra">
+  <p class="marca">Mostrador</p>
+  <button class="pild-tasa" id="pildTasa" type="button" aria-describedby="pildDesc">
+    <span class="pild-etq" id="pildEtq">BCV</span>
+    <b class="pild-valor" id="pildValor">—</b>
+  </button>
+  <span class="sr" id="pildDesc">Ver la tasa del dólar</span>
+  <button class="icono" id="btnAjustes" type="button" aria-label="Ajustes">
+    <svg class="ic"><use href="#i-ajustes"/></svg>
+  </button>
+</header>
+
+<main id="principal">
+
+  <!-- ===================== VISITAS ===================== -->
+  <section class="vista" id="vista-visitas" role="tabpanel" aria-labelledby="tab-visitas">
+    <form class="panel formulario" id="formVisita" novalidate autocomplete="off">
+      <h1 class="titulo">Nueva visita</h1>
+
+      <div class="campo">
+        <label for="vNombre">Nombre</label>
+        <div class="con-accion">
+          <input id="vNombre" name="nombre" type="text" autocapitalize="words" enterkeyhint="next" maxlength="80" required aria-describedby="vNombreError">
+          <button type="button" class="icono icono-campo" id="btnContacto" aria-label="Elegir de los contactos del teléfono" hidden>
+            <svg class="ic"><use href="#i-contactos"/></svg>
+          </button>
+        </div>
+        <p class="error" id="vNombreError"></p>
+      </div>
+
+      <div class="campo">
+        <label for="vTel">Teléfono</label>
+        <input id="vTel" name="telefono" type="tel" inputmode="tel" placeholder="0414 123 4567" enterkeyhint="next" maxlength="24" required aria-describedby="vTelError">
+        <p class="error" id="vTelError"></p>
+      </div>
+
+      <div class="campo">
+        <label for="vMotivo">Motivo de la visita</label>
+        <textarea id="vMotivo" name="motivo" rows="2" maxlength="300" enterkeyhint="done" required aria-describedby="vMotivoError"></textarea>
+        <div class="chips" id="chipsMotivo" role="group" aria-label="Motivos frecuentes"></div>
+        <p class="error" id="vMotivoError"></p>
+      </div>
+
+      <button class="btn btn-wa" type="submit">
+        <svg class="ic"><use href="#i-enviar"/></svg>
+        <span>Guardar y enviar por WhatsApp</span>
+      </button>
+      <p class="destino"><span id="destinoTexto"></span> <button type="button" class="enlace" id="btnDestino">Cambiar</button></p>
+    </form>
+
+    <div class="cabecera-lista">
+      <h2>Registro</h2>
+      <button type="button" class="btn-chico" id="btnExportar">
+        <svg class="ic"><use href="#i-exportar"/></svg><span>Exportar</span>
+      </button>
+    </div>
+    <label class="buscador" id="cajaBuscar" hidden>
+      <svg class="ic"><use href="#i-buscar"/></svg>
+      <input type="search" id="buscarVisita" placeholder="Buscar nombre, teléfono o motivo" aria-label="Buscar en el registro" enterkeyhint="search">
+    </label>
+    <div class="lista-dias" id="listaVisitas"></div>
+    <p class="vacio" id="vacioVisitas">Aún no hay visitas. Cada visita que guardes aparece aquí, la más reciente arriba.</p>
+  </section>
+
+  <!-- ===================== TASA ===================== -->
+  <section class="vista" id="vista-tasa" role="tabpanel" aria-labelledby="tab-tasa" hidden>
+    <article class="panel tasa" aria-labelledby="tTasa">
+      <div class="tasa-cabeza">
+        <h1 class="titulo" id="tTasa">Dólar BCV</h1>
+        <button type="button" class="icono" id="btnActualizar" aria-label="Actualizar la tasa">
+          <svg class="ic"><use href="#i-actualizar"/></svg>
+        </button>
+      </div>
+      <p class="tasa-cifra" id="tasaCifra"><span class="ent" id="tasaEnt">—</span><span class="cola" id="tasaCola"></span></p>
+      <p class="tasa-unidad">bolívares por dólar</p>
+      <p class="tasa-cambio" id="tasaCambio" hidden>
+        <svg class="ic"><use id="tasaCambioIcono" href="#i-subio"/></svg>
+        <span id="tasaCambioTexto"></span>
+      </p>
+      <dl class="tasa-datos">
+        <div><dt>Vigente</dt><dd id="tasaFecha">—</dd></div>
+        <div><dt>Consultada</dt><dd id="tasaConsulta">—</dd></div>
+      </dl>
+      <p class="estado" id="tasaEstado" role="status"></p>
+    </article>
+
+    <div class="panel proxima" id="proxima" hidden>
+      <div class="proxima-texto">
+        <p class="proxima-titulo" id="proximaTitulo"></p>
+        <p class="proxima-cifra"><b id="proximaValor"></b> <span id="proximaCambio"></span></p>
+      </div>
+      <label class="interruptor">
+        <input type="checkbox" id="usarProxima" role="switch">
+        <span class="interruptor-pista" aria-hidden="true"></span>
+        <span class="interruptor-texto">Usar para convertir</span>
+      </label>
+    </div>
+
+    <section class="panel conversor" aria-labelledby="tConv">
+      <h2 id="tConv">Convertir</h2>
+      <div class="monto">
+        <label for="cUsd">Dólares</label>
+        <div class="monto-caja"><span class="prefijo" aria-hidden="true">$</span><input id="cUsd" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" enterkeyhint="done"></div>
+      </div>
+      <div class="monto">
+        <label for="cBs">Bolívares</label>
+        <div class="monto-caja"><span class="prefijo" aria-hidden="true">Bs.</span><input id="cBs" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" enterkeyhint="done"></div>
+      </div>
+      <p class="nota" id="convNota"></p>
+    </section>
+
+    <p class="fuente">Datos del Banco Central de Venezuela, consultados en DolarApi.</p>
+  </section>
+
+  <!-- ===================== CALCULADORA ===================== -->
+  <section class="vista vista-calc" id="vista-calc" role="tabpanel" aria-labelledby="tab-calc" hidden>
+    <h1 class="sr">Calculadora</h1>
+    <div class="panel pantalla">
+      <div class="pantalla-arriba">
+        <div class="segmentado" role="radiogroup" aria-label="Calcular en">
+          <button type="button" role="radio" aria-checked="true" data-moneda="usd">En $</button>
+          <button type="button" role="radio" aria-checked="false" data-moneda="bs">En Bs.</button>
+        </div>
+        <button type="button" class="btn-chico" id="btnFijar" disabled>
+          <svg class="ic"><use href="#i-precios"/></svg><span>Fijar precio</span>
+        </button>
+      </div>
+      <p class="pantalla-expr" id="calcExpr"></p>
+      <p class="pantalla-res" id="calcRes"><span class="pantalla-moneda" id="calcMoneda">$</span><span id="calcNum">0</span></p>
+      <p class="pantalla-conv" id="calcConv"></p>
+    </div>
+    <div class="teclado" id="teclado" role="group" aria-label="Teclado de la calculadora">
+      <button type="button" class="tecla t-fn" data-t="C" aria-label="Borrar todo">C</button>
+      <button type="button" class="tecla t-fn" data-t="borrar" aria-label="Borrar el último"><svg class="ic"><use href="#i-retroceso"/></svg></button>
+      <button type="button" class="tecla t-fn" data-t="%" aria-label="Por ciento">%</button>
+      <button type="button" class="tecla t-op" data-t="/" aria-label="Dividir">÷</button>
+      <button type="button" class="tecla" data-t="7">7</button>
+      <button type="button" class="tecla" data-t="8">8</button>
+      <button type="button" class="tecla" data-t="9">9</button>
+      <button type="button" class="tecla t-op" data-t="*" aria-label="Multiplicar">×</button>
+      <button type="button" class="tecla" data-t="4">4</button>
+      <button type="button" class="tecla" data-t="5">5</button>
+      <button type="button" class="tecla" data-t="6">6</button>
+      <button type="button" class="tecla t-op" data-t="-" aria-label="Restar">−</button>
+      <button type="button" class="tecla" data-t="1">1</button>
+      <button type="button" class="tecla" data-t="2">2</button>
+      <button type="button" class="tecla" data-t="3">3</button>
+      <button type="button" class="tecla t-op" data-t="+" aria-label="Sumar">+</button>
+      <button type="button" class="tecla" data-t="00">00</button>
+      <button type="button" class="tecla" data-t="0">0</button>
+      <button type="button" class="tecla" data-t="." aria-label="Coma decimal">,</button>
+      <button type="button" class="tecla t-igual" data-t="=" aria-label="Igual">=</button>
+    </div>
+  </section>
+
+  <!-- ===================== PRECIOS ===================== -->
+  <section class="vista" id="vista-precios" role="tabpanel" aria-labelledby="tab-precios" hidden>
+    <form class="panel formulario" id="formPrecio" novalidate autocomplete="off">
+      <h1 class="titulo">Fijar un precio</h1>
+      <div class="fila-2">
+        <div class="campo">
+          <label for="pNombre">Producto o servicio</label>
+          <input id="pNombre" type="text" maxlength="60" placeholder="Opcional" enterkeyhint="next" autocapitalize="sentences">
+        </div>
+        <div class="campo campo-usd">
+          <label for="pUsd">Precio en $</label>
+          <input id="pUsd" type="text" inputmode="decimal" placeholder="0,00" enterkeyhint="done" required aria-describedby="pError pPrevia">
+        </div>
+      </div>
+      <p class="vista-previa" id="pPrevia"></p>
+      <p class="error" id="pError"></p>
+      <button class="btn btn-prim" type="submit">
+        <svg class="ic"><use href="#i-mas"/></svg><span>Fijar precio</span>
+      </button>
+    </form>
+
+    <div class="cabecera-lista">
+      <h2>Precios fijados</h2>
+      <button type="button" class="btn-chico" id="btnCompartir">
+        <svg class="ic"><use href="#i-compartir"/></svg><span>Compartir</span>
+      </button>
+    </div>
+    <p class="nota nota-fondo" id="preciosNota"></p>
+    <ul class="panel lista" id="listaPrecios" hidden></ul>
+    <p class="vacio" id="vacioPrecios">Fija aquí tus precios en dólares. Los bolívares se recalculan solos cada vez que cambia la tasa.</p>
+  </section>
+</main>
+
+<nav class="pestanas" id="pestanas" aria-label="Secciones">
+ <div class="pestanas-lista" role="tablist" aria-label="Secciones">
+  <span class="gota" id="gota" aria-hidden="true"></span>
+  <button type="button" role="tab" id="tab-visitas" aria-controls="vista-visitas" aria-selected="true" data-vista="visitas">
+    <svg class="ic"><use href="#i-visitas"/></svg><span>Visitas</span>
+  </button>
+  <button type="button" role="tab" id="tab-tasa" aria-controls="vista-tasa" aria-selected="false" tabindex="-1" data-vista="tasa">
+    <svg class="ic"><use href="#i-tasa"/></svg><span>Tasa</span>
+  </button>
+  <button type="button" role="tab" id="tab-calc" aria-controls="vista-calc" aria-selected="false" tabindex="-1" data-vista="calc">
+    <svg class="ic"><use href="#i-calc"/></svg><span>Calcular</span>
+  </button>
+  <button type="button" role="tab" id="tab-precios" aria-controls="vista-precios" aria-selected="false" tabindex="-1" data-vista="precios">
+    <svg class="ic"><use href="#i-precios"/></svg><span>Precios</span>
+  </button>
+ </div>
+</nav>
+
+<div class="aviso" id="aviso" popover="manual" role="status" aria-live="polite">
+  <span id="avisoTexto"></span>
+  <button type="button" class="aviso-accion" id="avisoAccion" hidden></button>
+</div>
+
+<!-- ===================== HOJA: AJUSTES ===================== -->
+<dialog class="hoja" id="hojaAjustes" aria-labelledby="tAjustes">
+  <form method="dialog" class="hoja-cuerpo" id="formAjustes" novalidate autocomplete="off">
+    <div class="hoja-cabeza">
+      <h2 id="tAjustes">Ajustes</h2>
+      <button type="button" class="icono" data-cerrar aria-label="Cerrar ajustes"><svg class="ic"><use href="#i-cerrar"/></svg></button>
+    </div>
+
+    <fieldset class="grupo">
+      <legend>WhatsApp</legend>
+      <p class="grupo-pregunta" id="pDestino">Cada visita se envía a</p>
+      <div class="segmentado segmentado-ancho" role="radiogroup" aria-labelledby="pDestino">
+        <label><input type="radio" name="destino" value="visitante"><span>El visitante</span></label>
+        <label><input type="radio" name="destino" value="fijo"><span>Un número fijo</span></label>
+      </div>
+      <div class="campo" id="campoFijo" hidden>
+        <label for="aFijo">Número que recibe las visitas</label>
+        <input id="aFijo" type="tel" inputmode="tel" placeholder="0412 765 4321" maxlength="24" aria-describedby="aFijoAyuda">
+        <p class="ayuda" id="aFijoAyuda">Por ejemplo, el del encargado o el de la oficina.</p>
+      </div>
+      <div class="campo">
+        <label for="aPlantilla" id="aPlantillaEtq">Mensaje</label>
+        <textarea id="aPlantilla" rows="5" maxlength="1000" aria-describedby="aPlantillaAyuda"></textarea>
+        <p class="ayuda" id="aPlantillaAyuda">Puedes usar {nombre}, {telefono}, {motivo}, {fecha} y {hora}. Entre asteriscos, *así*, queda en negrita.</p>
+        <button type="button" class="enlace" id="btnPlantillaBase">Volver al mensaje original</button>
+      </div>
+      <div class="campo campo-corto">
+        <label for="aCodigo">Código de país</label>
+        <input id="aCodigo" type="text" inputmode="numeric" maxlength="4" aria-describedby="aCodigoAyuda">
+        <p class="ayuda" id="aCodigoAyuda">Se agrega a los números que empiezan por 0. Venezuela es 58.</p>
+      </div>
+    </fieldset>
+
+    <fieldset class="grupo">
+      <legend>Tasa</legend>
+      <label class="interruptor">
+        <input type="checkbox" id="aManual" role="switch">
+        <span class="interruptor-pista" aria-hidden="true"></span>
+        <span class="interruptor-texto">Usar una tasa escrita a mano</span>
+      </label>
+      <div class="campo" id="campoManual" hidden>
+        <label for="aTasaManual">Bolívares por dólar</label>
+        <input id="aTasaManual" type="text" inputmode="decimal" placeholder="0,0000" aria-describedby="aTasaAyuda">
+        <p class="ayuda" id="aTasaAyuda">Sirve si no hay conexión o si cobras con otra tasa. Toda la app convierte con esta.</p>
+      </div>
+    </fieldset>
+
+    <fieldset class="grupo">
+      <legend>Apariencia</legend>
+      <div class="segmentado segmentado-ancho" role="radiogroup" aria-label="Tema">
+        <label><input type="radio" name="tema" value="auto"><span>Automático</span></label>
+        <label><input type="radio" name="tema" value="claro"><span>Claro</span></label>
+        <label><input type="radio" name="tema" value="oscuro"><span>Oscuro</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset class="grupo">
+      <legend>Datos</legend>
+      <p class="ayuda">Las visitas y los precios se guardan solo en este teléfono. Exporta el registro de vez en cuando para tener una copia.</p>
+      <button type="button" class="btn btn-sec" id="btnInstalar" hidden>Instalar en el teléfono</button>
+      <button type="button" class="btn btn-peligro" id="btnBorrarVisitas">
+        <svg class="ic"><use href="#i-borrar"/></svg><span>Borrar todas las visitas</span>
+      </button>
+    </fieldset>
+
+    <button class="btn btn-prim" value="listo">Listo</button>
+  </form>
+</dialog>
+
+<!-- ===================== HOJA: EDITAR PRECIO ===================== -->
+<dialog class="hoja" id="hojaPrecio" aria-labelledby="tPrecio">
+  <form method="dialog" class="hoja-cuerpo" id="formEditarPrecio" novalidate autocomplete="off">
+    <div class="hoja-cabeza">
+      <h2 id="tPrecio">Editar precio</h2>
+      <button type="button" class="icono" data-cerrar aria-label="Cerrar sin guardar"><svg class="ic"><use href="#i-cerrar"/></svg></button>
+    </div>
+    <div class="campo">
+      <label for="ePNombre">Producto o servicio</label>
+      <input id="ePNombre" type="text" maxlength="60" placeholder="Opcional" enterkeyhint="next" autocapitalize="sentences">
+    </div>
+    <div class="campo">
+      <label for="ePUsd">Precio en $</label>
+      <input id="ePUsd" type="text" inputmode="decimal" placeholder="0,00" enterkeyhint="done" aria-describedby="ePError ePPrevia">
+      <p class="vista-previa" id="ePPrevia"></p>
+      <p class="error" id="ePError"></p>
+    </div>
+    <div class="fila-botones">
+      <button type="button" class="btn btn-peligro" id="btnBorrarPrecio">
+        <svg class="ic"><use href="#i-borrar"/></svg><span>Borrar</span>
+      </button>
+      <button type="submit" class="btn btn-prim" value="guardar">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ===================== HOJA: CONFIRMAR ===================== -->
+<dialog class="hoja hoja-chica" id="hojaConfirmar" aria-labelledby="confirmarTexto">
+  <form method="dialog" class="hoja-cuerpo">
+    <p class="confirmar-texto" id="confirmarTexto"></p>
+    <div class="fila-botones">
+      <button class="btn btn-sec" value="no">Cancelar</button>
+      <button class="btn btn-peligro-lleno" value="si" id="confirmarSi">Borrar</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="logica.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
