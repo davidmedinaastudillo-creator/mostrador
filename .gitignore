@@ -1,0 +1,7 @@
+# Nunca subir la llave de firma ni los paquetes (van en GitHub Releases).
+*.keystore
+*.jks
+firma.json
+signing-key-info.txt
+*.apk
+*.aab

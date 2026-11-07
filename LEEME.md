@@ -40,12 +40,25 @@ Busca la IP de la laptop con `ipconfig` (por ejemplo `192.168.1.20`) y abre en e
 `http://192.168.1.20:8765`. Así funciona todo, pero no se instala como app ni trabaja sin internet
 (eso requiere `https`).
 
-## Cambiar algo
+## APK para Android
+
+Cada versión se publica en [Releases](https://github.com/davidmedinaastudillo-creator/mostrador/releases)
+con su APK. Desde el teléfono: descarga el `.apk` de la última versión y ábrelo (Android pedirá
+permiso para instalar apps de esa fuente). Si ya está instalada, se actualiza y conserva los datos.
+
+El APK es un envoltorio (Trusted Web Activity) que abre el sitio publicado a pantalla completa:
+los cambios que se suben a GitHub Pages llegan también a quien ya tiene el APK.
+
+La llave de firma está en `C:\Users\Laptop\Documents\Mostrador-firma` (fuera del repositorio).
+**Respáldala**: sin ella, los teléfonos no aceptan actualizaciones del APK.
+
+## Cambiar algo (cada mejora = una versión)
 
 - Archivos: `index.html` (estructura), `estilos.css` (diseño), `app.js` (comportamiento),
   `logica.js` (cálculos, formato, teléfonos, tasa), `sw.js` (funcionamiento sin internet).
-- Después de cambiar archivos ya publicados, sube `VERSION` en `sw.js` (`mostrador-v2`, …) para
-  que los teléfonos descarguen la versión nueva.
+- Pasos: cambiar → probar → subir la versión en `version.js` → anotar en `CAMBIOS.md` → commit y
+  push → `node C:\Users\Laptop\.claude\skills\apk-android\scripts\publicar.mjs` (desde esta carpeta).
+  Ese script prueba, arma el APK con la misma llave y crea el Release.
 - Pruebas de la lógica: `node --test pruebas/logica.test.js`
 
 ## Créditos

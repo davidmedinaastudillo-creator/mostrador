@@ -1,10 +1,12 @@
 /* Service worker: guarda la app en el teléfono para que abra sin internet.
    La tasa no pasa por aquí (la app la guarda aparte y muestra la última conocida).
-   Al cambiar archivos, sube VERSION para que los teléfonos descarten la copia vieja. */
-var VERSION = 'mostrador-v1';
+   El nombre de la caché sale de version.js: al subir la versión, los teléfonos descartan la copia vieja. */
+importScripts('version.js');
+var VERSION = 'mostrador-' + self.APP_VERSION;
 var ARCHIVOS = [
   './',
   'index.html',
+  'version.js',
   'estilos.css',
   'tema.js',
   'logica.js',

@@ -1130,6 +1130,7 @@
     pintarDestino();
   }
 
+  $('versionApp').textContent = window.APP_VERSION || '—';
   aplicarTema();
   pintarTodo();
   pintarVisitas();

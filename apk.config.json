@@ -1,0 +1,17 @@
+{
+  "nombre": "Mostrador",
+  "nombreCorto": "Mostrador",
+  "paquete": "io.github.davidmedinaastudillo_creator.mostrador",
+  "url": "https://davidmedinaastudillo-creator.github.io/mostrador/",
+  "manifiesto": "manifest.webmanifest",
+  "archivoVersion": "version.js",
+  "cambios": "CAMBIOS.md",
+  "icono": "iconos/icono-512.png",
+  "iconoMaskable": "iconos/icono-maskable-512.png",
+  "colorTema": "#DCEFEB",
+  "colorTemaOscuro": "#06202B",
+  "colorFondo": "#DCEFEB",
+  "orientacion": "portrait",
+  "pais": "VE",
+  "pruebas": "node --test pruebas/logica.test.js"
+}
