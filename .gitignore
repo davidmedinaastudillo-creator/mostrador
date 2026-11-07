@@ -5,3 +5,5 @@ firma.json
 signing-key-info.txt
 *.apk
 *.aab
+# …salvo la copia de descarga directa, que publicar.mjs actualiza en cada versión.
+!apk/Mostrador.apk

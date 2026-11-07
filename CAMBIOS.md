@@ -1,5 +1,15 @@
 # Cambios
 
+## 1.1.0 (2026-11-07)
+
+- **Calendario de tasas anteriores** en la pestaña Tasa: toca cualquier día desde enero de 2023
+  y ves la tasa BCV que regía ese día, cuánto cambió frente a la anterior y cuánto ha subido
+  hasta hoy. Los fines de semana y feriados muestra la del último día hábil. Para ir lejos, toca
+  el nombre del mes y elige la fecha.
+- Convierte dólares a bolívares con la tasa del día elegido.
+- El historial queda guardado en el teléfono: el calendario también funciona sin conexión.
+- En Ajustes, *Descargar la app (APK)* baja el archivo directamente.
+
 ## 1.0.0 (2026-11-07)
 
 Primera versión de Mostrador.

@@ -282,6 +282,69 @@
     return (pct > 0 ? 'Subió ' : 'Bajó ') + formatear(abs, 2) + ' %';
   }
 
+  /* ------------------------------------------- historial completo (calendario) */
+
+  /** [{fecha, valor}] → [[fecha, valor]] ordenado y sin repetidos: formato compacto para guardar. */
+  function compactarHistorial(lista) {
+    return unirHistorial(lista, [], 1e6).map(function (r) { return [r.fecha, r.valor]; });
+  }
+
+  /** [[fecha, valor]] → [{fecha, valor}] válidos y ordenados. */
+  function expandirHistorial(compacto) {
+    var lista = (Array.isArray(compacto) ? compacto : []).map(function (p) {
+      return Array.isArray(p) ? { fecha: p[0], valor: p[1] } : null;
+    });
+    return unirHistorial(lista, [], 1e6);
+  }
+
+  /**
+   * La tasa que regía en una fecha: la última publicada con fecha valor ≤ esa fecha
+   * (fines de semana y feriados rige la del último día hábil). La lista va ordenada.
+   */
+  function tasaEnFecha(lista, fechaISO) {
+    if (!lista || !lista.length) return null;
+    if (fechaISO < lista[0].fecha) return { antesDelInicio: true, primera: lista[0] };
+    var lo = 0, hi = lista.length - 1;
+    while (lo < hi) {
+      var medio = (lo + hi + 1) >> 1;
+      if (lista[medio].fecha <= fechaISO) lo = medio; else hi = medio - 1;
+    }
+    var actual = lista[lo];
+    var anterior = lista[lo - 1] || null;
+    return {
+      fecha: actual.fecha,
+      valor: actual.valor,
+      exacta: actual.fecha === fechaISO,
+      anterior: anterior,
+      cambio: anterior ? (actual.valor - anterior.valor) / anterior.valor * 100 : null
+    };
+  }
+
+  /** "2026-11-30" + 3 → "2026-12-03" */
+  function sumarDias(fechaISO, n) {
+    var f = fechaLocalDeISO(fechaISO);
+    return claveDia(new Date(f.getFullYear(), f.getMonth(), f.getDate() + n));
+  }
+
+  /** (2026, 10) → "noviembre de 2026" */
+  function nombreMesAnio(anio, mes0) {
+    return MESES[mes0] + ' de ' + anio;
+  }
+
+  /**
+   * Las 42 casillas (6 semanas) de un mes, empezando en domingo como en los calendarios de
+   * Venezuela: [{ fecha, dia, delMes, semana }] (semana: 0 = domingo … 6 = sábado).
+   */
+  function mesCalendario(anio, mes0) {
+    var primero = new Date(anio, mes0, 1);
+    var celdas = [];
+    for (var i = 0; i < 42; i++) {
+      var d = new Date(anio, mes0, 1 - primero.getDay() + i);
+      celdas.push({ fecha: claveDia(d), dia: d.getDate(), delMes: d.getMonth() === mes0, semana: d.getDay() });
+    }
+    return celdas;
+  }
+
   /* ------------------------------------------------------------- calculadora */
   /* La expresión se guarda con '.', '+', '-', '*', '/', '%' y dígitos. */
 
@@ -440,6 +503,8 @@
     hora12: hora12, fechaNumerica: fechaNumerica, haceCuanto: haceCuanto,
     unirHistorial: unirHistorial, leerHistorico: leerHistorico, leerOficial: leerOficial,
     resumenTasa: resumenTasa, textoCambio: textoCambio,
+    compactarHistorial: compactarHistorial, expandirHistorial: expandirHistorial, tasaEnFecha: tasaEnFecha,
+    sumarDias: sumarDias, nombreMesAnio: nombreMesAnio, mesCalendario: mesCalendario,
     teclaCalc: teclaCalc, calcular: calcular, mostrarExpresion: mostrarExpresion,
     resultadoComoExpresion: resultadoComoExpresion, visitasCSV: visitasCSV
   };

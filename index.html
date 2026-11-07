@@ -35,6 +35,9 @@
   <symbol id="i-buscar" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/></symbol>
   <symbol id="i-subio" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></symbol>
   <symbol id="i-bajo" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
+  <symbol id="i-izq" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-der" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-abajo" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></symbol>
 </svg>
 
 <div class="fondo" aria-hidden="true"></div>
@@ -148,6 +151,40 @@
         <div class="monto-caja"><span class="prefijo" aria-hidden="true">Bs.</span><input id="cBs" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" enterkeyhint="done"></div>
       </div>
       <p class="nota" id="convNota"></p>
+    </section>
+
+    <section class="panel historial" aria-labelledby="tHist">
+      <h2 id="tHist">Tasas anteriores</h2>
+      <div class="cal-nav">
+        <button type="button" class="icono" id="calPrev" aria-label="Mes anterior"><svg class="ic"><use href="#i-izq"/></svg></button>
+        <button type="button" class="cal-mes" id="calMes" aria-describedby="calMesAyuda">
+          <span id="calMesTexto"></span><svg class="ic"><use href="#i-abajo"/></svg>
+        </button>
+        <span class="sr" id="calMesAyuda">Elegir otra fecha</span>
+        <button type="button" class="icono" id="calNext" aria-label="Mes siguiente"><svg class="ic"><use href="#i-der"/></svg></button>
+      </div>
+      <label class="cal-ir sr" id="calIr">
+        <span>Ir a una fecha</span>
+        <input type="date" id="histFecha">
+      </label>
+      <div class="cal-semana" aria-hidden="true">
+        <span>do</span><span>lu</span><span>ma</span><span>mi</span><span>ju</span><span>vi</span><span>sá</span>
+      </div>
+      <div class="cal-dias" id="calDias" role="group" aria-label="Días del mes"></div>
+      <p class="cal-ayuda">El punto marca los días en que el BCV publicó una tasa nueva.</p>
+
+      <div class="hist-resultado" id="histResultado" aria-live="polite" hidden>
+        <p class="hist-titulo" id="histTitulo"></p>
+        <p class="hist-cifra" id="histCifra"><span class="ent" id="histEnt"></span><span class="cola" id="histCola"></span></p>
+        <p class="hist-nota" id="histNota"></p>
+        <p class="hist-nota" id="histCambio"></p>
+        <div class="monto monto-chico">
+          <label for="histUsd">Convertir con esta tasa</label>
+          <div class="monto-caja"><span class="prefijo" aria-hidden="true">$</span><input id="histUsd" type="text" inputmode="decimal" autocomplete="off" placeholder="0,00" enterkeyhint="done" aria-describedby="histBs"></div>
+          <p class="vista-previa" id="histBs"></p>
+        </div>
+      </div>
+      <p class="estado" id="histEstado" role="status"></p>
     </section>
 
     <p class="fuente">Datos del Banco Central de Venezuela, consultados en DolarApi.</p>
@@ -318,9 +355,10 @@
     <fieldset class="grupo">
       <legend>Acerca de</legend>
       <p class="ayuda">Mostrador, versión <span id="versionApp">—</span>. Para instalarla en otro teléfono Android, descarga el APK de la última versión.</p>
-      <a class="btn btn-sec" href="https://github.com/davidmedinaastudillo-creator/mostrador/releases/latest" target="_blank" rel="noopener">
+      <a class="btn btn-sec" href="https://github.com/davidmedinaastudillo-creator/mostrador/raw/main/apk/Mostrador.apk" target="_blank" rel="noopener">
         <svg class="ic"><use href="#i-exportar"/></svg><span>Descargar la app (APK)</span>
       </a>
+      <a class="enlace" href="https://github.com/davidmedinaastudillo-creator/mostrador/releases" target="_blank" rel="noopener">Ver todas las versiones</a>
     </fieldset>
 
     <button class="btn btn-prim" value="listo">Listo</button>

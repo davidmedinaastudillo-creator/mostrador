@@ -44,6 +44,8 @@ self.addEventListener('fetch', function (e) {
   if (pedido.method !== 'GET') return;
   var url = new URL(pedido.url);
   if (url.origin !== self.location.origin) return;
+  // Los APK se descargan siempre de la red (si no, una navegación recibiría la app en su lugar).
+  if (/\.(apk|aab)$/i.test(url.pathname)) return;
 
   var clave = pedido.mode === 'navigate' ? 'index.html' : pedido;
   e.respondWith(

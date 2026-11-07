@@ -113,6 +113,42 @@ test('tasa vigente, anterior y próxima (como responde la API hoy)', () => {
   assert.equal(L.textoCambio(0.001), 'Sin cambio');
 });
 
+test('calendario: tasa que regía en cada fecha', () => {
+  const lista = L.expandirHistorial([
+    ['2026-11-06', 896.1225], ['2026-11-04', 893.2173], ['2026-11-05', 894.8876],
+    ['2026-11-09', 897.5383], ['2023-01-03', 17.5591], ['malo', 1], ['2026-11-05', 894.8876]
+  ]);
+  assert.equal(lista.length, 5);
+  assert.equal(lista[0].fecha, '2023-01-03');
+  assert.deepEqual(L.compactarHistorial(lista)[1], ['2026-11-04', 893.2173]);
+  const jueves = L.tasaEnFecha(lista, '2026-11-05');
+  assert.equal(jueves.valor, 894.8876);
+  assert.equal(jueves.exacta, true);
+  assert.equal(L.textoCambio(jueves.cambio), 'Subió 0,19 %');
+  // Domingo: rige la del viernes
+  const domingo = L.tasaEnFecha(lista, '2026-11-08');
+  assert.equal(domingo.fecha, '2026-11-06');
+  assert.equal(domingo.exacta, false);
+  // Entre 2023 y 2026 sin datos intermedios: rige la última conocida
+  assert.equal(L.tasaEnFecha(lista, '2025-06-01').fecha, '2023-01-03');
+  assert.equal(L.tasaEnFecha(lista, '2023-01-03').anterior, null);
+  assert.equal(L.tasaEnFecha(lista, '2022-12-31').antesDelInicio, true);
+  assert.equal(L.tasaEnFecha([], '2026-11-05'), null);
+});
+
+test('calendario: casillas del mes (empieza en domingo)', () => {
+  const nov = L.mesCalendario(2026, 10);
+  assert.equal(nov.length, 42);
+  assert.deepEqual(nov[0], { fecha: '2026-11-01', dia: 1, delMes: true, semana: 0 });
+  assert.equal(nov[41].fecha, '2026-12-12');
+  const dic = L.mesCalendario(2026, 11);   // 1 de diciembre de 2026 es martes
+  assert.deepEqual(dic[0], { fecha: '2026-11-29', dia: 29, delMes: false, semana: 0 });
+  assert.equal(dic[2].fecha, '2026-12-01');
+  assert.equal(L.sumarDias('2026-11-30', 3), '2026-12-03');
+  assert.equal(L.sumarDias('2026-03-01', -1), '2026-02-28');
+  assert.equal(L.nombreMesAnio(2023, 0), 'enero de 2023');
+});
+
 test('teclas de la calculadora', () => {
   const escribir = (teclas) => teclas.reduce((e, t) => L.teclaCalc(e, t), '');
   assert.equal(escribir(['1', '2', '*', '3', '+', '5']), '12*3+5');

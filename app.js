@@ -13,7 +13,8 @@
     visitas: 'mostrador.visitas',
     precios: 'mostrador.precios',
     ajustes: 'mostrador.ajustes',
-    tasa: 'mostrador.tasa'
+    tasa: 'mostrador.tasa',
+    historial: 'mostrador.historial'
   };
   var PLANTILLA_VISITANTE = 'Hola, {nombre}. Registramos tu visita del {fecha} a las {hora}.\nMotivo: {motivo}\n¡Gracias por venir!';
   var PLANTILLA_FIJO = '*Nueva visita*\nNombre: {nombre}\nTeléfono: {telefono}\nMotivo: {motivo}\nFecha: {fecha}, {hora}';
@@ -274,10 +275,12 @@
     });
     Promise.all(resultados).then(function (r) {
       var nuevos = [];
+      var historico = r[1].ok ? L.leerHistorico(r[1].v) : [];
       if (r[0].ok) nuevos = nuevos.concat(L.leerOficial(r[0].v));
-      if (r[1].ok) nuevos = nuevos.concat(L.leerHistorico(r[1].v).slice(-20));
+      nuevos = nuevos.concat(historico.slice(-20));
       var validos = L.unirHistorial(nuevos, []);
       if (validos.length) {
+        guardarHistorialCompleto(historico.concat(validos));
         tasaGuardada = {
           historial: L.unirHistorial(tasaGuardada.historial, validos, 15),
           consultada: new Date().toISOString()
@@ -390,6 +393,177 @@
 
   campoDinero(cUsd, 2, function () { ultimoConvertido = 'usd'; pintarConversor(); });
   campoDinero(cBs, 2, function () { ultimoConvertido = 'bs'; pintarConversor(); });
+
+  /* ================================================================ calendario de tasas */
+
+  // El historial completo (desde 2023) se guarda en el teléfono: el calendario funciona sin conexión.
+  var historialCompleto = L.expandirHistorial(leer(CLAVES.historial, []));
+  var cal = { anio: 0, mes: 0, seleccion: null };
+  var cargandoHistorial = false;
+  var hayShowPicker = typeof HTMLInputElement !== 'undefined' && 'showPicker' in HTMLInputElement.prototype;
+  if (!hayShowPicker) $('calIr').classList.remove('sr');   // sin selector nativo: el campo de fecha queda a la vista
+
+  function guardarHistorialCompleto(lista) {
+    var antes = historialCompleto.length;
+    historialCompleto = L.unirHistorial(historialCompleto, lista, 1e6);
+    if (historialCompleto.length !== antes || lista.length) guardar(CLAVES.historial, L.compactarHistorial(historialCompleto));
+  }
+
+  function listaCalendario() {
+    return historialCompleto.length ? L.unirHistorial(historialCompleto, tasaGuardada.historial, 1e6)
+      : L.unirHistorial(tasaGuardada.historial, [], 1e6);
+  }
+
+  function cargarHistorial() {
+    if (cargandoHistorial) return;
+    cargandoHistorial = true;
+    pintarCalendario();
+    pedirJSON(API_HISTORICO, 20000)
+      .then(function (j) { guardarHistorialCompleto(L.leerHistorico(j)); }, function () {})
+      .then(function () { cargandoHistorial = false; pintarCalendario(); });
+  }
+
+  function elegirFecha(fecha) {
+    cal.seleccion = fecha;
+    var p = fecha.split('-');
+    cal.anio = Number(p[0]);
+    cal.mes = Number(p[1]) - 1;
+  }
+
+  function pintarCalendario() {
+    var hoy = L.hoyCaracas();
+    if (!cal.seleccion) elegirFecha(hoy);
+    var lista = listaCalendario();
+    var primera = lista.length ? lista[0].fecha : null;
+    var ultima = lista.length && lista[lista.length - 1].fecha > hoy ? lista[lista.length - 1].fecha : hoy;
+    var publicadas = {};
+    lista.forEach(function (r) { publicadas[r.fecha] = true; });
+
+    $('calMesTexto').textContent = L.nombreMesAnio(cal.anio, cal.mes);
+    var esteMes = cal.anio + '-' + ('0' + (cal.mes + 1)).slice(-2);
+    $('calPrev').disabled = !primera || esteMes <= primera.slice(0, 7);
+    $('calNext').disabled = esteMes >= ultima.slice(0, 7);
+    $('calDias').setAttribute('aria-label', 'Días de ' + L.nombreMesAnio(cal.anio, cal.mes));
+    var fecha = $('histFecha');
+    fecha.min = primera || '';
+    fecha.max = ultima;
+    fecha.value = cal.seleccion;
+
+    var cont = $('calDias');
+    cont.textContent = '';
+    var hayFoco = false;
+    L.mesCalendario(cal.anio, cal.mes).forEach(function (c) {
+      var b = el('button', 'dia-btn', String(c.dia));
+      b.type = 'button';
+      b.dataset.fecha = c.fecha;
+      if (!c.delMes) b.classList.add('fuera');
+      if (c.semana === 0 || c.semana === 6) b.classList.add('finde');
+      if (publicadas[c.fecha]) b.classList.add('publicada');
+      if (c.fecha === hoy) b.classList.add('hoy');
+      b.disabled = !primera || c.fecha < primera || c.fecha > ultima;
+      var elegido = c.fecha === cal.seleccion;
+      b.setAttribute('aria-pressed', String(elegido));
+      b.tabIndex = elegido && !b.disabled ? 0 : -1;
+      if (b.tabIndex === 0) hayFoco = true;
+      b.setAttribute('aria-label', L.fechaLarga(c.fecha, '0000') + (c.fecha === hoy ? ', hoy' : '') +
+        (publicadas[c.fecha] ? ', el BCV publicó tasa' : ''));
+      cont.appendChild(b);
+    });
+    if (!hayFoco) {   // el día elegido está en otro mes: el teclado entra por el primer día disponible
+      var primero = cont.querySelector('.dia-btn:not(.fuera):not(:disabled)');
+      if (primero) primero.tabIndex = 0;
+    }
+    pintarSeleccionHistorial(lista, hoy, primera);
+  }
+
+  function pintarSeleccionHistorial(lista, hoy, primera) {
+    var estado = $('histEstado');
+    var caja = $('histResultado');
+    estado.textContent = '';
+    if (!lista.length) {
+      caja.hidden = true;
+      estado.textContent = cargandoHistorial ? 'Descargando el historial de tasas…' :
+        'Todavía no hay historial. Se descarga solo la próxima vez que haya conexión.';
+      return;
+    }
+    if (cargandoHistorial && historialCompleto.length < 30) estado.textContent = 'Descargando el historial completo…';
+    var t = L.tasaEnFecha(lista, cal.seleccion);
+    if (!t || t.antesDelInicio) {
+      caja.hidden = true;
+      estado.textContent = 'Hay tasas desde el ' + L.fechaLarga(primera, '0000') + '.';
+      return;
+    }
+    caja.hidden = false;
+    var titulo = L.fechaLarga(cal.seleccion, hoy);
+    $('histTitulo').textContent = cal.seleccion === hoy ? 'Hoy, ' + titulo : 'Tasa del ' + titulo;
+    var partes = L.partirTasa(t.valor);
+    $('histEnt').textContent = partes.ent;
+    $('histCola').textContent = partes.cola;
+    $('histCifra').setAttribute('aria-label', partes.completa + ' bolívares por dólar');
+
+    var nota = '';
+    if (cal.seleccion > hoy) nota = 'Publicada por adelantado: entra en vigencia ese día.';
+    else if (!t.exacta && cal.seleccion === hoy) nota = 'Hoy no hay tasa nueva: rige la del ' + L.fechaLarga(t.fecha, hoy) + '.';
+    else if (!t.exacta) nota = 'Ese día no hubo tasa nueva: regía la del ' + L.fechaLarga(t.fecha, hoy) + '.';
+    $('histNota').textContent = nota;
+
+    var cambio = [];
+    if (t.cambio != null) cambio.push(L.textoCambio(t.cambio) + ' frente a la del ' + L.fechaCorta(t.anterior.fecha) + '.');
+    var deHoy = L.tasaEnFecha(lista, hoy);
+    if (deHoy && !deHoy.antesDelInicio && deHoy.fecha !== t.fecha && cal.seleccion < hoy) {
+      var d = (deHoy.valor - t.valor) / t.valor * 100;
+      cambio.push('Hasta hoy ' + (d >= 0 ? 'subió ' : 'bajó ') + L.formatear(Math.abs(d), 2) + ' %.');
+    }
+    $('histCambio').textContent = cambio.join(' ');
+    var usd = valorDinero($('histUsd'));
+    $('histBs').textContent = usd > 0 ? '= ' + L.dinero(usd * t.valor, 'bs') : '';
+  }
+
+  function moverSeleccion(fecha, enfocar) {
+    var lista = listaCalendario();
+    var hoy = L.hoyCaracas();
+    var primera = lista.length ? lista[0].fecha : fecha;
+    var ultima = lista.length && lista[lista.length - 1].fecha > hoy ? lista[lista.length - 1].fecha : hoy;
+    if (fecha < primera) fecha = primera;
+    if (fecha > ultima) fecha = ultima;
+    elegirFecha(fecha);
+    pintarCalendario();
+    if (enfocar) {
+      var b = $('calDias').querySelector('[data-fecha="' + fecha + '"]');
+      if (b) b.focus();
+    }
+  }
+
+  $('calDias').addEventListener('click', function (e) {
+    var b = e.target.closest('.dia-btn');
+    if (b && !b.disabled) moverSeleccion(b.dataset.fecha, true);
+  });
+  $('calDias').addEventListener('keydown', function (e) {
+    var pasos = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[e.key];
+    if (!pasos || !cal.seleccion) return;
+    e.preventDefault();
+    moverSeleccion(L.sumarDias(cal.seleccion, pasos), true);
+  });
+  $('calPrev').addEventListener('click', function () {
+    cal.mes -= 1;
+    if (cal.mes < 0) { cal.mes = 11; cal.anio -= 1; }
+    pintarCalendario();
+  });
+  $('calNext').addEventListener('click', function () {
+    cal.mes += 1;
+    if (cal.mes > 11) { cal.mes = 0; cal.anio += 1; }
+    pintarCalendario();
+  });
+  // Tocar el mes abre el selector de fecha de Android para saltar lejos (hasta 2023).
+  $('calMes').addEventListener('click', function () {
+    var f = $('histFecha');
+    try { if (hayShowPicker) { f.showPicker(); return; } } catch (e) {}
+    f.focus();
+  });
+  $('histFecha').addEventListener('change', function () {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(this.value)) moverSeleccion(this.value, false);
+  });
+  campoDinero($('histUsd'), 2, function () { pintarCalendario(); });
 
   /* ================================================================ visitas */
 
@@ -1101,6 +1275,7 @@
     if (vista === 'tasa') {
       pintarTasa();
       if (tasaVieja()) actualizarTasa(false);
+      else if (historialCompleto.length < 30) cargarHistorial();
     }
   }
 
@@ -1124,6 +1299,7 @@
 
   function pintarTodo() {
     pintarTasa();
+    pintarCalendario();
     pintarConversor();
     pintarCalc();
     pintarPrecios();

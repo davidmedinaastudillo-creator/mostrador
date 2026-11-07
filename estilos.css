@@ -550,6 +550,59 @@ a.btn { text-decoration: none; }
 .lista > li:only-child .precio { border-radius: var(--radio-l); }
 #listaPrecios { padding: 0; overflow: hidden; }
 
+/* ------------------------------------------------------------- calendario de tasas */
+.historial { display: flex; flex-direction: column; gap: 10px; }
+.cal-nav { display: flex; align-items: center; gap: 6px; }
+.cal-nav .icono:disabled { opacity: .35; cursor: default; }
+.cal-mes {
+  flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+  min-height: 44px; padding: 0 10px; border: 0; border-radius: 14px; background: none;
+  font-size: 17px; font-weight: 680; letter-spacing: -.01em;
+}
+.cal-mes .ic { width: 18px; height: 18px; color: var(--tinta-2); }
+.cal-mes:active { background: var(--relleno); }
+.cal-ir:not(.sr) { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 620; color: var(--tinta-2); }
+.cal-ir input { min-height: 44px; padding: 8px 12px; border: 0; border-radius: var(--radio-s);
+  background: var(--campo); box-shadow: inset 0 0 0 1px var(--campo-borde); font-size: 16px; }
+.cal-semana, .cal-dias { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-semana span { padding: 2px 0; text-align: center; font-size: 12.5px; font-weight: 620; color: var(--tinta-2); }
+.dia-btn {
+  position: relative; display: grid; place-items: center;
+  min-height: 44px; padding: 0; border: 0; border-radius: 14px; background: none;
+  font-size: 16px; font-weight: 540; font-variant-numeric: tabular-nums; color: var(--tinta);
+  transition: background-color .12s var(--ease);
+}
+.dia-btn.finde { color: var(--tinta-2); }
+.dia-btn.fuera { color: var(--tinta-3); opacity: .5; }
+.dia-btn:disabled { opacity: .28; cursor: default; }
+/* Punto: ese día el BCV publicó una tasa nueva. */
+.dia-btn.publicada::after {
+  content: ""; position: absolute; bottom: 5px; left: 50%; width: 4px; height: 4px; margin-left: -2px;
+  border-radius: 50%; background: var(--acento);
+}
+.dia-btn.hoy { box-shadow: inset 0 0 0 1.5px var(--acento); font-weight: 680; }
+.dia-btn:active:not(:disabled) { background: var(--relleno-fuerte); }
+/* El día elegido es una gota de vidrio, como la de las pestañas. */
+.dia-btn[aria-pressed="true"] { background: var(--gota); box-shadow: var(--gota-filo); font-weight: 720; color: var(--tinta); opacity: 1; }
+.dia-btn[aria-pressed="true"].hoy { box-shadow: var(--gota-filo), inset 0 0 0 1.5px var(--acento); }
+.cal-ayuda { font-size: 13.5px; color: var(--tinta-2); }
+.hist-resultado {
+  display: flex; flex-direction: column; gap: 4px;
+  margin-top: 4px; padding-top: 14px; border-top: 1px solid var(--separador);
+}
+.hist-titulo { font-size: 15px; font-weight: 620; color: var(--tinta-2); }
+.hist-cifra {
+  display: flex; align-items: flex-start; margin: 2px 0 4px -2px;
+  font-size: clamp(40px, 12vw, 54px); font-weight: 720; letter-spacing: -.04em; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.hist-cifra .cola { margin: .1em 0 0 .06em; font-size: .4em; font-weight: 600; letter-spacing: -.01em; color: var(--tinta-3); }
+.hist-nota { font-size: 14.5px; color: var(--tinta-2); text-wrap: pretty; }
+.hist-nota:empty { display: none; }
+.monto-chico { margin-top: 10px; }
+.monto-chico .monto-caja input { min-height: 52px; font-size: 22px; }
+.monto-chico .vista-previa { margin-top: 8px; }
+
 /* ------------------------------------------------------------- pestañas */
 .pestanas {
   position: fixed; z-index: 30; left: 50%; translate: -50% 0;
