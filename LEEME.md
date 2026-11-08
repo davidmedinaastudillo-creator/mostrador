@@ -1,6 +1,10 @@
-# Mostrador
+# Medina (antes Mostrador)
 
-App para Android (web instalable, PWA) con estética de vidrio líquido:
+App para Android (web instalable, PWA) con estética de vidrio líquido minimalista sobre fondo negro
+(un solo acento turquesa, barra y pestañas flotantes de vidrio con la gota que se desliza) y una
+pantalla de carga con el nombre y un aro tricolor que gira alrededor del logo. Las claves guardadas
+(`mostrador.*`), el paquete del APK y la dirección del sitio conservan el nombre anterior a propósito:
+cambiarlos borraría los datos o haría que Android tratara la app como otra.
 
 - **Visitas**: nombre, teléfono y motivo. Al tocar *Guardar y enviar por WhatsApp* se guarda en el
   registro y se abre WhatsApp con el mensaje ya escrito (al visitante o a un número fijo, según Ajustes).
@@ -63,5 +67,5 @@ La llave de firma está en `C:\Users\Laptop\Documents\Mostrador-firma` (fuera de
 
 ## Créditos
 
-- Fuente Bricolage Grotesque (SIL Open Font License, ver `fuentes/OFL.txt`).
+- Fuente IBM Plex Sans (SIL Open Font License, ver `fuentes/OFL-plex.txt`).
 - Tasa: Banco Central de Venezuela, consultada en [DolarApi](https://ve.dolarapi.com).

@@ -1,11 +1,14 @@
-# Mostrador
+# Medina
+
+(Antes se llamaba Mostrador; el repositorio y los enlaces conservan ese nombre para que las apps
+instaladas sigan actualizándose.)
 
 App para Android: registro de visitas con envío por WhatsApp, tasa BCV del dólar con calendario de
 tasas anteriores, calculadora de precios y precios en dólares convertidos a bolívares.
 
 ## Descargar
 
-### [Descargar Mostrador para Android (APK)](https://github.com/davidmedinaastudillo-creator/mostrador/raw/main/apk/Mostrador.apk)
+### [Descargar Medina para Android (APK)](https://github.com/davidmedinaastudillo-creator/mostrador/raw/main/apk/Mostrador.apk)
 
 Siempre es la última versión. Las anteriores y sus cambios están en
 [Releases](https://github.com/davidmedinaastudillo-creator/mostrador/releases) y en [CAMBIOS.md](CAMBIOS.md).

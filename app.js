@@ -1,4 +1,5 @@
-/* Mostrador — interfaz. La lógica pura está en logica.js (MostradorLogica). */
+/* Medina (antes Mostrador) — interfaz. La lógica pura está en logica.js (MostradorLogica).
+   Las claves guardadas siguen llamándose "mostrador.*": cambiarlas borraría los datos. */
 (function () {
   'use strict';
 
@@ -23,7 +24,7 @@
   var API_HISTORICO = 'https://ve.dolarapi.com/v1/historicos/dolares/oficial';
   var TASA_VIEJA_MS = 30 * 60 * 1000;
   var MAX_VISITAS_EN_PANTALLA = 200;
-  var COLOR_BARRA = { claro: '#DCEFEB', oscuro: '#06202B' };
+  var COLOR_BARRA = { claro: '#EEF1F4', oscuro: '#000000' };
 
   var AJUSTES_BASE = {
     destino: 'visitante',
@@ -34,7 +35,7 @@
     tasaManual: false,
     valorTasaManual: null,
     usarProxima: false,
-    tema: 'auto'
+    tema: 'oscuro'
   };
 
   function leer(clave, base) {
@@ -66,6 +67,14 @@
   tasaGuardada.historial = lista(tasaGuardada.historial);
 
   function guardarAjustes() { guardar(CLAVES.ajustes, ajustes); }
+
+  // 1.2.0: el fondo negro (tema oscuro) pasa a ser el de siempre. Quien tenía "Automático" pasa a
+  // oscuro una sola vez; quien eligió "Claro" lo conserva, y puede volver a elegir en Ajustes.
+  if (!ajustes.temaNegro) {
+    if (ajustes.tema === 'auto') ajustes.tema = 'oscuro';
+    ajustes.temaNegro = true;
+    try { localStorage.setItem(CLAVES.ajustes, JSON.stringify(ajustes)); } catch (e) {}
+  }
 
   function idNuevo() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -719,6 +728,8 @@
     return t.charAt(0).toUpperCase() + t.slice(1);
   }
 
+  var diasAbiertos = {};
+
   function pintarVisitas() {
     var cont = $('listaVisitas');
     var busqueda = sinAcentos($('buscarVisita').value.trim());
@@ -742,11 +753,16 @@
       porDia[clave].push(v);
     });
 
-    grupos.forEach(function (clave) {
-      var dia = el('section', 'dia');
-      var h = el('h3', 'dia-titulo', tituloDia(clave, hoyClave, ayerClave));
+    grupos.forEach(function (clave, i) {
+      // Cada día se pliega: el más reciente abierto, los anteriores cerrados (se ve cuántas hubo).
+      // Lo que la persona abra o cierre se recuerda mientras usa la app; al buscar, todo abierto.
+      var dia = el('details', 'dia');
+      dia.open = busqueda ? true : (clave in diasAbiertos ? diasAbiertos[clave] : i === 0);
+      dia.addEventListener('toggle', function () { if (!$('buscarVisita').value.trim()) diasAbiertos[clave] = dia.open; });
+      var h = el('summary', 'dia-titulo');
+      h.appendChild(el('span', 'dia-nombre', tituloDia(clave, hoyClave, ayerClave)));
       var n = porDia[clave].length;
-      h.appendChild(el('span', null, n === 1 ? '1 visita' : n + ' visitas'));
+      h.appendChild(el('span', 'dia-cuenta', n === 1 ? '1 visita' : n + ' visitas'));
       dia.appendChild(h);
       var ul = el('ul', 'panel lista');
       porDia[clave].forEach(function (v) {
@@ -796,6 +812,9 @@
   $('buscarVisita').addEventListener('input', pintarVisitas);
 
   $('listaVisitas').addEventListener('click', function (e) {
+    // Un motivo largo se muestra en 3 líneas; tocarlo lo abre completo (y otra vez lo cierra).
+    var motivo = e.target.closest('.v-motivo');
+    if (motivo) { motivo.classList.toggle('completo'); return; }
     var boton = e.target.closest('button[data-accion]');
     if (!boton) return;
     var id = boton.closest('li').dataset.id;
@@ -1016,10 +1035,11 @@
     var ul = $('listaPrecios');
     ul.textContent = '';
     ul.hidden = !precios.length;
+    if (!precios.length) $('plegPrecio').open = true;   // sin precios, el formulario se ofrece abierto
     $('vacioPrecios').hidden = precios.length > 0;
     $('btnCompartir').hidden = !precios.length;
     $('preciosNota').textContent = !precios.length ? '' :
-      t ? 'Convertidos con la ' + describirTasa(t) + '. Toca un precio para cambiarlo.' :
+      t ? 'Con la ' + describirTasa(t) + '. Toca uno para cambiarlo.' :
       'Sin tasa todavía: los bolívares aparecen cuando se consulte la tasa.';
 
     precios.forEach(function (p, i) {
@@ -1271,6 +1291,7 @@
     }
     vistaActual = vista;
     window.scrollTo(0, desplazamientos[vista] || 0);
+    mostrarBarra(true);
     try { sessionStorage.setItem('mostrador.vista', vista); } catch (e) {}
     if (vista === 'tasa') {
       pintarTasa();
@@ -1280,6 +1301,53 @@
   }
 
   gota.addEventListener('animationend', function () { gota.classList.remove('estirando'); });
+
+  /* ================================================================ barras que se esconden */
+  // Al bajar, la barra de arriba y las pestañas de abajo se esconden para dejar más pantalla; al
+  // subir un poco, vuelven. Siempre visibles cerca del inicio, al llegar al final (para poder
+  // cambiar de pestaña), al cambiar de pestaña y si tienen el foco del teclado.
+  var barra = doc.querySelector('.barra');
+  var barras = [barra, $('pestanas')];
+  var ultimoY = window.scrollY;
+  var recorrido = 0;
+  var revisando = false;
+  var ignorarHasta = 0;
+
+  function ponerBarras(esconder) {
+    barras.forEach(function (b) { b.classList.toggle('escondida', esconder); });
+  }
+
+  function mostrarBarra(saltoDeVista) {
+    ponerBarras(false);
+    recorrido = 0;
+    ultimoY = window.scrollY;
+    if (saltoDeVista) ignorarHasta = performance.now() + 200;   // el salto de scrollTo no cuenta
+  }
+
+  function revisarBarra() {
+    revisando = false;
+    var y = Math.max(0, window.scrollY);
+    var d = y - ultimoY;
+    ultimoY = y;
+    if (performance.now() < ignorarHasta) return;
+    // Solo el foco del teclado la retiene: un botón tocado con el dedo (BCV, Ajustes) también
+    // queda con el foco, y eso no debe impedir que se esconda.
+    if (y < 72 || focoDeTeclado()) { mostrarBarra(); return; }
+    // Al llegar al final vuelven, para poder cambiar de pestaña sin tener que subir.
+    if (y + window.innerHeight >= doc.documentElement.scrollHeight - 4) { mostrarBarra(); return; }
+    if ((d > 0 && recorrido < 0) || (d < 0 && recorrido > 0)) recorrido = 0;
+    recorrido += d;
+    if (recorrido > 24) ponerBarras(true);
+    else if (recorrido < -12) ponerBarras(false);
+  }
+
+  window.addEventListener('scroll', function () {
+    if (!revisando) { revisando = true; window.requestAnimationFrame(revisarBarra); }
+  }, { passive: true });
+  function focoDeTeclado() {
+    try { return barras.some(function (b) { return !!b.querySelector(':focus-visible'); }); } catch (e) { return false; }
+  }
+  barras.forEach(function (b) { b.addEventListener('focusin', function () { if (focoDeTeclado()) mostrarBarra(); }); });
 
   $('pestanas').addEventListener('click', function (e) {
     var b = e.target.closest('[role="tab"]');
@@ -1324,6 +1392,18 @@
     }
   });
   window.addEventListener('online', function () { if (errorTasa) actualizarTasa(false); });
+
+  // Pantalla de carga: se queda al menos 1,2 s desde que empezó a abrir (para ver el aro girar)
+  // y luego se desvanece. Con "reducir movimiento" se va en cuanto la app está lista.
+  var carga = $('carga');
+  if (carga) {
+    var sinMovimiento = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var falta = sinMovimiento ? 0 : Math.max(0, 1200 - performance.now());
+    setTimeout(function () {
+      carga.classList.add('saliendo');
+      setTimeout(function () { if (carga.parentNode) carga.parentNode.removeChild(carga); }, 400);
+    }, falta);
+  }
   // "Consultada hace X min" se mantiene al día mientras la app está abierta.
   setInterval(function () { if (doc.visibilityState === 'visible' && vistaActual === 'tasa') pintarTasa(); }, 60000);
 
@@ -1333,7 +1413,7 @@
   try {
     if (sessionStorage.getItem('mostrador.actualizada')) {
       sessionStorage.removeItem('mostrador.actualizada');
-      avisar('Mostrador se actualizó a la versión ' + (window.APP_VERSION || '') + '.');
+      avisar('Medina se actualizó a la versión ' + (window.APP_VERSION || '') + '.');
     }
   } catch (e) {}
 
@@ -1351,7 +1431,7 @@
     };
     navigator.serviceWorker.addEventListener('controllerchange', function () {
       if (!teniaControlador) return;   // primera instalación: no hace falta recargar
-      if (hayAlgoEscrito()) avisar('Hay una versión nueva de Mostrador.', 'Actualizar', recargar, 20000);
+      if (hayAlgoEscrito()) avisar('Hay una versión nueva de Medina.', 'Actualizar', recargar, 20000);
       else recargar();
     });
     window.addEventListener('load', function () {

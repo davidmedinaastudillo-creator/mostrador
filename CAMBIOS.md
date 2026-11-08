@@ -1,5 +1,30 @@
 # Cambios
 
+## 1.2.0 (2026-11-08)
+
+- **La app ahora se llama Medina.** Tus visitas, precios y ajustes se conservan.
+- **Pantalla de carga**: al abrir aparece el nombre con un aro de los colores de Venezuela
+  (amarillo, azul y rojo) que gira alrededor del logo.
+- **Fondo negro** de siempre. Si prefieres el claro, elígelo en Ajustes → Apariencia.
+- **Más pantalla**: al bajar, la barra de arriba y las pestañas se esconden; al subir un poco (o al
+  llegar al final), vuelven.
+- **Menos texto**: ayudas más cortas, y en el registro un motivo muy largo se muestra en 3
+  líneas (tócalo para verlo completo). Los nombres de producto largos ocupan 2 líneas como mucho.
+- **Lo importante, más grande**: la cifra de la tasa y el monto en bolívares de cada precio
+  destacan; títulos, fechas y botones secundarios (Exportar, Compartir) son más discretos.
+- **Menos cosas a la vez**: el calendario de tasas anteriores, el formulario para fijar un precio
+  (cuando ya tienes precios) y la personalización del mensaje de WhatsApp se abren con un toque.
+  En el registro, solo el día más reciente se ve abierto; los anteriores muestran cuántas visitas
+  tuvieron y se abren al tocarlos. La tasa del próximo día hábil va dentro de la tarjeta de la tasa.
+- **Nuevo aspecto: vidrio líquido minimalista.** Un solo color de acento, el turquesa del ícono,
+  y piezas de vidrio con un filo de luz, como un reflejo.
+- La barra de arriba y las pestañas flotan como cápsulas de vidrio; la gota que marca la
+  pestaña activa se desliza al cambiar de sección.
+- Letras IBM Plex Sans, más legibles en cifras; la tasa y la calculadora muestran los números
+  grandes y finos.
+- Botones principales en turquesa con brillo de vidrio; al tocarlos se hunden un poco.
+- Todo lo demás funciona igual: tus visitas, precios y ajustes se conservan.
+
 ## 1.1.1 (2026-11-07)
 
 - Las versiones nuevas llegan al abrir la app. Antes podían tardar varias aperturas en aparecer

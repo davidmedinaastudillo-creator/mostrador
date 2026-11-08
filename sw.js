@@ -20,7 +20,7 @@ var ARCHIVOS = [
   'logica.js',
   'app.js',
   'manifest.webmanifest',
-  'fuentes/bricolage.woff2',
+  'fuentes/plex-sans.woff2',
   'iconos/icono-192.png',
   'iconos/icono-512.png',
   'iconos/icono-maskable-512.png',
@@ -47,8 +47,13 @@ self.addEventListener('activate', function (e) {
   );
 });
 
+// En la computadora de pruebas (127.0.0.1 / localhost) no se sirve nada guardado: así cada
+// cambio se ve al recargar, aunque la versión no haya cambiado. En el teléfono no aplica.
+var EN_PRUEBAS = /^(127\.0\.0\.1|localhost)$/.test(self.location.hostname);
+
 self.addEventListener('fetch', function (e) {
   var pedido = e.request;
+  if (EN_PRUEBAS) return;
   if (pedido.method !== 'GET') return;
   var url = new URL(pedido.url);
   if (url.origin !== self.location.origin) return;

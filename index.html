@@ -4,18 +4,31 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://ve.dolarapi.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'">
-<title>Mostrador</title>
+<title>Medina</title>
 <meta name="description" content="Registro de visitas con envío por WhatsApp, tasa BCV del dólar, calculadora y precios en dólares convertidos a bolívares.">
-<meta name="theme-color" content="#DCEFEB" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#06202B" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="iconos/icono-192.png" type="image/png">
 <link rel="apple-touch-icon" href="iconos/apple-touch-icon.png">
-<link rel="preload" href="fuentes/bricolage.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fuentes/plex-sans.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="estilos.css">
 <script src="tema.js"></script>
 </head>
 <body>
+
+<!-- Pantalla de carga: el nombre y un aro tricolor que gira alrededor del logo. -->
+<div class="carga" id="carga" aria-hidden="true">
+  <div class="carga-centro">
+    <svg class="carga-aro" viewBox="0 0 120 120" focusable="false">
+      <circle class="aro-amarillo" cx="60" cy="60" r="54"/>
+      <circle class="aro-azul" cx="60" cy="60" r="54"/>
+      <circle class="aro-rojo" cx="60" cy="60" r="54"/>
+    </svg>
+    <span class="carga-logo" translate="no">M</span>
+  </div>
+  <p class="carga-nombre" translate="no">Medina</p>
+</div>
 
 <svg class="sprite" aria-hidden="true" focusable="false">
   <symbol id="i-visitas" viewBox="0 0 24 24"><path d="M15 20v-1.5a4 4 0 0 0-4-4H6.5a4 4 0 0 0-4 4V20"/><circle cx="8.75" cy="7.5" r="3.75"/><path d="M19 8.5v6M22 11.5h-6"/></symbol>
@@ -43,7 +56,7 @@
 <div class="fondo" aria-hidden="true"></div>
 
 <header class="barra">
-  <p class="marca">Mostrador</p>
+  <p class="marca" translate="no">Medina</p>
   <button class="pild-tasa" id="pildTasa" type="button" aria-describedby="pildDesc">
     <span class="pild-etq" id="pildEtq">BCV</span>
     <b class="pild-valor" id="pildValor">—</b>
@@ -103,7 +116,7 @@
       <input type="search" id="buscarVisita" placeholder="Buscar nombre, teléfono o motivo" aria-label="Buscar en el registro" enterkeyhint="search">
     </label>
     <div class="lista-dias" id="listaVisitas"></div>
-    <p class="vacio" id="vacioVisitas">Aún no hay visitas. Cada visita que guardes aparece aquí, la más reciente arriba.</p>
+    <p class="vacio" id="vacioVisitas">Aún no hay visitas. Aparecerán aquí, la más reciente arriba.</p>
   </section>
 
   <!-- ===================== TASA ===================== -->
@@ -125,20 +138,20 @@
         <div><dt>Vigente</dt><dd id="tasaFecha">—</dd></div>
         <div><dt>Consultada</dt><dd id="tasaConsulta">—</dd></div>
       </dl>
+      <!-- La tasa del próximo día hábil va dentro de la misma tarjeta: es parte de la misma información. -->
+      <div class="proxima" id="proxima" hidden>
+        <div class="proxima-texto">
+          <p class="proxima-titulo" id="proximaTitulo"></p>
+          <p class="proxima-cifra"><b id="proximaValor"></b> <span id="proximaCambio"></span></p>
+        </div>
+        <label class="interruptor">
+          <input type="checkbox" id="usarProxima" role="switch">
+          <span class="interruptor-pista" aria-hidden="true"></span>
+          <span class="interruptor-texto">Usar para convertir</span>
+        </label>
+      </div>
       <p class="estado" id="tasaEstado" role="status"></p>
     </article>
-
-    <div class="panel proxima" id="proxima" hidden>
-      <div class="proxima-texto">
-        <p class="proxima-titulo" id="proximaTitulo"></p>
-        <p class="proxima-cifra"><b id="proximaValor"></b> <span id="proximaCambio"></span></p>
-      </div>
-      <label class="interruptor">
-        <input type="checkbox" id="usarProxima" role="switch">
-        <span class="interruptor-pista" aria-hidden="true"></span>
-        <span class="interruptor-texto">Usar para convertir</span>
-      </label>
-    </div>
 
     <section class="panel conversor" aria-labelledby="tConv">
       <h2 id="tConv">Convertir</h2>
@@ -153,8 +166,13 @@
       <p class="nota" id="convNota"></p>
     </section>
 
-    <section class="panel historial" aria-labelledby="tHist">
-      <h2 id="tHist">Tasas anteriores</h2>
+    <!-- Plegado al abrir: el calendario es lo más largo de la pantalla y se usa de vez en cuando. -->
+    <details class="panel plegable historial" id="plegHistorial">
+      <summary class="plegable-cabeza">
+        <span class="plegable-titulo"><h2 id="tHist">Tasas anteriores</h2><span class="plegable-sub">Cualquier día desde 2023</span></span>
+        <svg class="ic plegable-flecha" aria-hidden="true"><use href="#i-abajo"/></svg>
+      </summary>
+      <div class="plegable-cuerpo">
       <div class="cal-nav">
         <button type="button" class="icono" id="calPrev" aria-label="Mes anterior"><svg class="ic"><use href="#i-izq"/></svg></button>
         <button type="button" class="cal-mes" id="calMes" aria-describedby="calMesAyuda">
@@ -171,7 +189,7 @@
         <span>do</span><span>lu</span><span>ma</span><span>mi</span><span>ju</span><span>vi</span><span>sá</span>
       </div>
       <div class="cal-dias" id="calDias" role="group" aria-label="Días del mes"></div>
-      <p class="cal-ayuda">El punto marca los días en que el BCV publicó una tasa nueva.</p>
+      <p class="cal-ayuda">El punto marca los días con tasa nueva del BCV.</p>
 
       <div class="hist-resultado" id="histResultado" aria-live="polite" hidden>
         <p class="hist-titulo" id="histTitulo"></p>
@@ -185,7 +203,8 @@
         </div>
       </div>
       <p class="estado" id="histEstado" role="status"></p>
-    </section>
+      </div>
+    </details>
 
     <p class="fuente">Datos del Banco Central de Venezuela, consultados en DolarApi.</p>
   </section>
@@ -233,8 +252,13 @@
 
   <!-- ===================== PRECIOS ===================== -->
   <section class="vista" id="vista-precios" role="tabpanel" aria-labelledby="tab-precios" hidden>
-    <form class="panel formulario" id="formPrecio" novalidate autocomplete="off">
-      <h1 class="titulo">Fijar un precio</h1>
+    <!-- Plegado cuando ya hay precios (lo principal aquí es la lista); abierto si no hay ninguno. -->
+    <details class="panel plegable plegable-agregar" id="plegPrecio">
+      <summary class="plegable-cabeza">
+        <span class="plegable-titulo"><h1 class="titulo">Fijar un precio</h1></span>
+        <svg class="ic plegable-flecha" aria-hidden="true"><use href="#i-mas"/></svg>
+      </summary>
+    <form class="formulario plegable-cuerpo" id="formPrecio" novalidate autocomplete="off">
       <div class="fila-2">
         <div class="campo">
           <label for="pNombre">Producto o servicio</label>
@@ -251,6 +275,7 @@
         <svg class="ic"><use href="#i-mas"/></svg><span>Fijar precio</span>
       </button>
     </form>
+    </details>
 
     <div class="cabecera-lista">
       <h2>Precios fijados</h2>
@@ -260,7 +285,7 @@
     </div>
     <p class="nota nota-fondo" id="preciosNota"></p>
     <ul class="panel lista" id="listaPrecios" hidden></ul>
-    <p class="vacio" id="vacioPrecios">Fija aquí tus precios en dólares. Los bolívares se recalculan solos cada vez que cambia la tasa.</p>
+    <p class="vacio" id="vacioPrecios">Fija tus precios en dólares: los bolívares se actualizan solos con la tasa.</p>
   </section>
 </main>
 
@@ -307,17 +332,23 @@
         <input id="aFijo" type="tel" inputmode="tel" placeholder="0412 765 4321" maxlength="24" aria-describedby="aFijoAyuda">
         <p class="ayuda" id="aFijoAyuda">Por ejemplo, el del encargado o el de la oficina.</p>
       </div>
+      <!-- Se usa poco: el mensaje y el código de país quedan plegados. -->
+      <details class="plegable-simple" id="plegMensaje">
+        <summary class="plegable-cabeza"><span class="plegable-titulo">Personalizar el mensaje</span><svg class="ic plegable-flecha" aria-hidden="true"><use href="#i-abajo"/></svg></summary>
+        <div class="plegable-cuerpo">
       <div class="campo">
         <label for="aPlantilla" id="aPlantillaEtq">Mensaje</label>
         <textarea id="aPlantilla" rows="5" maxlength="1000" aria-describedby="aPlantillaAyuda"></textarea>
-        <p class="ayuda" id="aPlantillaAyuda">Puedes usar {nombre}, {telefono}, {motivo}, {fecha} y {hora}. Entre asteriscos, *así*, queda en negrita.</p>
+        <p class="ayuda" id="aPlantillaAyuda">Usa {nombre}, {telefono}, {motivo}, {fecha} y {hora}. Entre *asteriscos* va en negrita.</p>
         <button type="button" class="enlace" id="btnPlantillaBase">Volver al mensaje original</button>
       </div>
       <div class="campo campo-corto">
         <label for="aCodigo">Código de país</label>
         <input id="aCodigo" type="text" inputmode="numeric" maxlength="4" aria-describedby="aCodigoAyuda">
-        <p class="ayuda" id="aCodigoAyuda">Se agrega a los números que empiezan por 0. Venezuela es 58.</p>
+        <p class="ayuda" id="aCodigoAyuda">Se agrega a los números que empiezan por 0.</p>
       </div>
+        </div>
+      </details>
     </fieldset>
 
     <fieldset class="grupo">
@@ -345,7 +376,7 @@
 
     <fieldset class="grupo">
       <legend>Datos</legend>
-      <p class="ayuda">Las visitas y los precios se guardan solo en este teléfono. Exporta el registro de vez en cuando para tener una copia.</p>
+      <p class="ayuda">Todo se guarda solo en este teléfono: exporta el registro de vez en cuando.</p>
       <button type="button" class="btn btn-sec" id="btnInstalar" hidden>Instalar en el teléfono</button>
       <button type="button" class="btn btn-peligro" id="btnBorrarVisitas">
         <svg class="ic"><use href="#i-borrar"/></svg><span>Borrar todas las visitas</span>
@@ -354,11 +385,13 @@
 
     <fieldset class="grupo">
       <legend>Acerca de</legend>
-      <p class="ayuda">Mostrador, versión <span id="versionApp">—</span>. Para instalarla en otro teléfono Android, descarga el APK de la última versión.</p>
-      <a class="btn btn-sec" href="https://github.com/davidmedinaastudillo-creator/mostrador/raw/main/apk/Mostrador.apk" target="_blank" rel="noopener">
-        <svg class="ic"><use href="#i-exportar"/></svg><span>Descargar la app (APK)</span>
-      </a>
-      <a class="enlace" href="https://github.com/davidmedinaastudillo-creator/mostrador/releases" target="_blank" rel="noopener">Ver todas las versiones</a>
+      <p class="ayuda">Medina, versión <span id="versionApp">—</span>.</p>
+      <div class="fila-acciones">
+        <a class="btn-chico" href="https://github.com/davidmedinaastudillo-creator/mostrador/raw/main/apk/Mostrador.apk" target="_blank" rel="noopener">
+          <svg class="ic"><use href="#i-exportar"/></svg><span>Descargar la app (APK)</span>
+        </a>
+        <a class="enlace" href="https://github.com/davidmedinaastudillo-creator/mostrador/releases" target="_blank" rel="noopener">Ver todas las versiones</a>
+      </div>
     </fieldset>
 
     <button class="btn btn-prim" value="listo">Listo</button>
