@@ -429,7 +429,7 @@
     pintarCalendario();
     pedirJSON(API_HISTORICO, 20000)
       .then(function (j) { guardarHistorialCompleto(L.leerHistorico(j)); }, function () {})
-      .then(function () { cargandoHistorial = false; pintarCalendario(); });
+      .then(function () { cargandoHistorial = false; pintarCalendario(); pintarCalc(); });
   }
 
   function elegirFecha(fecha) {
@@ -887,11 +887,37 @@
 
   /* ================================================================ calculadora */
 
-  var calc = { expr: '', moneda: 'usd', anterior: '', recienIgual: false };
+  var calc = { expr: '', moneda: 'usd', anterior: '', recienIgual: false, fecha: null };
+
+  // La calculadora puede convertir con la tasa de otro día (calc.fecha, del calendario de tasas).
+  // null = la de hoy, la misma que usa toda la app. No se guarda: al abrir de nuevo, vuelve a hoy.
+  function tasaCalc() {
+    if (!calc.fecha) return tasaEnUso();
+    var t = L.tasaEnFecha(listaCalendario(), calc.fecha);
+    if (!t || t.antesDelInicio) return tasaEnUso();
+    return { valor: t.valor, fecha: t.fecha, origen: 'otroDia' };
+  }
+
+  function pintarTasaCalc(t) {
+    var hoy = L.hoyCaracas();
+    var otroDia = !!t && t.origen === 'otroDia';
+    $('calcHoy').hidden = !otroDia;
+    $('calcFecha').classList.toggle('activa', otroDia);
+    // Corto para que quepa en una fila junto a "Hoy": "Hoy: 896,12", "15 mar 2024: 36,28".
+    var texto = !t ? 'Elegir tasa' :
+      otroDia ? L.fechaBreve(calc.fecha, hoy) + ': ' + L.formatear(t.valor, 2) :
+      t.origen === 'manual' ? 'Manual: ' + L.formatear(t.valor, 2) :
+      t.origen === 'proxima' ? L.fechaBreve(t.fecha, hoy) + ': ' + L.formatear(t.valor, 2) :
+      'Hoy: ' + L.formatear(t.valor, 2);
+    $('calcFechaTexto').textContent = texto;
+    $('calcFecha').setAttribute('aria-label', (otroDia ? 'Calculando con la tasa del ' + L.fechaLarga(calc.fecha, hoy) :
+      'Calculando con la tasa ' + (t && t.origen === 'manual' ? 'manual' : 'de hoy')) + (t ? ', ' + L.formatear(t.valor, 2) : '') + '. Toca para elegir otro día');
+  }
 
   function pintarCalc() {
     var r = L.calcular(calc.expr);
-    var t = tasaEnUso();
+    var t = tasaCalc();
+    pintarTasaCalc(t);
     var res = $('calcRes'), num = $('calcNum');
     $('calcExpr').textContent = calc.recienIgual ? calc.anterior + ' =' : L.mostrarExpresion(calc.expr);
     $('calcMoneda').textContent = calc.moneda === 'usd' ? '$' : 'Bs.';
@@ -958,6 +984,37 @@
   $('teclado').addEventListener('click', function (e) {
     var b = e.target.closest('.tecla');
     if (b) tecla(b.dataset.t);
+  });
+
+  // Elegir el día de la tasa: el mismo selector de fecha que el calendario de Tasa.
+  if (!hayShowPicker) $('calcFechaCampo').classList.remove('sr');
+  $('calcFecha').addEventListener('click', function () {
+    if (historialCompleto.length < 30) cargarHistorial();   // el historial completo baja solo si hay conexión
+    var lista = listaCalendario();
+    var hoy = L.hoyCaracas();
+    var f = $('calcFechaInput');
+    f.min = lista.length ? lista[0].fecha : '';
+    f.max = lista.length && lista[lista.length - 1].fecha > hoy ? lista[lista.length - 1].fecha : hoy;
+    f.value = calc.fecha || hoy;
+    try { if (hayShowPicker) { f.showPicker(); return; } } catch (e) {}
+    f.focus();
+  });
+  $('calcFechaInput').addEventListener('change', function () {
+    var v = this.value;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return;
+    if (v === L.hoyCaracas()) { calc.fecha = null; pintarCalc(); return; }
+    var t = L.tasaEnFecha(listaCalendario(), v);
+    if (!t || t.antesDelInicio) {
+      avisar(historialCompleto.length < 30 ? 'Todavía no están las tasas anteriores: se descargan con conexión.' : 'No hay tasa del BCV para esa fecha.');
+      return;
+    }
+    calc.fecha = v;
+    pintarCalc();
+  });
+  $('calcHoy').addEventListener('click', function () {
+    calc.fecha = null;
+    pintarCalc();
+    $('calcFecha').focus();
   });
 
   doc.querySelectorAll('.pantalla .segmentado button').forEach(function (b) {

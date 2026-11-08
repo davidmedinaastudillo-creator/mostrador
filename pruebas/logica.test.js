@@ -78,6 +78,10 @@ test('fechas en español', () => {
   assert.equal(L.fechaLarga('2026-11-06', '2026-11-07'), 'viernes 6 de noviembre');
   assert.equal(L.fechaLarga('2025-12-31', '2026-11-07'), 'miércoles 31 de diciembre de 2025');
   assert.equal(L.fechaCorta('2026-11-09'), 'lun 9 nov');
+  // botón de la tasa en la calculadora: con año solo si no es del año en curso
+  assert.equal(L.fechaBreve('2024-03-15', '2026-11-08'), '15 mar 2024');
+  assert.equal(L.fechaBreve('2026-11-06', '2026-11-08'), '6 nov');
+  assert.equal(L.fechaBreve('2026-01-02'), '2 ene 2026');
   assert.equal(L.hora12(new Date(2026, 10, 7, 0, 5)), '12:05 a. m.');
   assert.equal(L.hora12(new Date(2026, 10, 7, 13, 42)), '1:42 p. m.');
   // 2026-11-08 02:00 UTC todavía es 7 de noviembre en Caracas (UTC−4)

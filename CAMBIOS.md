@@ -1,5 +1,15 @@
 # Cambios
 
+## 1.3.0 (2026-11-08)
+
+- **Calculadora con la tasa de otro día**: debajo del resultado está la tasa con la que se
+  convierte ("Hoy: 896,12"). Tócala y elige cualquier fecha desde 2023: la calculadora convierte
+  con la tasa BCV de ese día (los fines de semana y feriados, la del último día hábil). Mientras
+  usas otro día, la tasa se ve resaltada y aparece el botón **Hoy** para volver a la del día.
+  El resto de la app sigue usando la tasa de hoy, y al abrir de nuevo la app la calculadora
+  vuelve sola a la de hoy.
+- El teclado de la calculadora se ajusta solo al alto de cada teléfono.
+
 ## 1.2.0 (2026-11-08)
 
 - **La app ahora se llama Medina.** Tus visitas, precios y ajustes se conservan.

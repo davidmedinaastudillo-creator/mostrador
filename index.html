@@ -51,6 +51,7 @@
   <symbol id="i-izq" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
   <symbol id="i-der" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
   <symbol id="i-abajo" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></symbol>
+  <symbol id="i-calendario" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
 </svg>
 
 <div class="fondo" aria-hidden="true"></div>
@@ -225,6 +226,16 @@
       <p class="pantalla-expr" id="calcExpr"></p>
       <p class="pantalla-res" id="calcRes"><span class="pantalla-moneda" id="calcMoneda">$</span><span id="calcNum">0</span></p>
       <p class="pantalla-conv" id="calcConv"></p>
+      <!-- Con qué tasa convierte: la de hoy, o la de otro día elegido en el calendario. -->
+      <div class="calc-tasa">
+        <button type="button" class="btn-chico calc-fecha" id="calcFecha">
+          <svg class="ic"><use href="#i-calendario"/></svg><span id="calcFechaTexto">Hoy</span>
+        </button>
+        <button type="button" class="btn-chico calc-hoy" id="calcHoy" aria-label="Volver a la tasa de hoy" hidden>
+          <svg class="ic"><use href="#i-actualizar"/></svg><span>Hoy</span>
+        </button>
+        <label class="cal-ir sr" id="calcFechaCampo"><span>Fecha de la tasa</span><input type="date" id="calcFechaInput"></label>
+      </div>
     </div>
     <div class="teclado" id="teclado" role="group" aria-label="Teclado de la calculadora">
       <button type="button" class="tecla t-fn" data-t="C" aria-label="Borrar todo">C</button>

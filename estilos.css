@@ -560,12 +560,29 @@ a.btn { text-decoration: none; }
   font-size: 17px; font-weight: 500; color: var(--acento); font-variant-numeric: tabular-nums;
 }
 
+/* Con qué tasa convierte: discreta con la de hoy; en turquesa si es la de otro día (que no se olvide). */
+.calc-tasa { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 10px; }
+.calc-tasa .btn-chico { min-height: 40px; padding: 4px 14px 4px 11px; font-size: 13.5px; }
+.calc-fecha { color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.calc-fecha.activa { color: var(--acento); background: var(--acento-suave); font-weight: 600; }
+.calc-hoy { color: var(--tinta); }
+.calc-tasa .cal-ir:not(.sr) { width: 100%; }
+
 .teclado { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
+/* La calculadora ocupa exactamente el alto visible (pantalla menos la barra de arriba y las
+   pestañas): el teclado toma lo que sobra y sus 5 filas se estiran o encogen entre 44 y 72 px.
+   Así nunca queda debajo de las pestañas, ni aunque la pantalla de arriba crezca. */
+.vista-calc {
+  height: calc(100svh - 180px - max(8px, env(safe-area-inset-top)) - env(safe-area-inset-bottom));
+  min-height: 430px;
+}
+.vista-calc .pantalla { flex: none; }
+.vista-calc .teclado { flex: 1 1 0; min-height: 0; grid-template-rows: repeat(5, minmax(44px, 72px)); align-content: start; }
 .tecla {
   position: relative;
   display: grid; place-items: center;
-  /* El teclado se ajusta al alto de la pantalla para que nunca quede bajo las pestañas. */
-  height: clamp(44px, calc((100svh - 420px) / 5), 72px); padding: 0; border: 0; border-radius: 22px;
+  /* La altura la da la fila del teclado (ver .vista-calc): ocupa justo el espacio que queda. */
+  height: auto; min-height: 44px; padding: 0; border: 0; border-radius: 22px;
   background: var(--brillo), var(--panel); box-shadow: var(--sombra-panel);
   font-size: 25px; font-weight: 400; font-variant-numeric: tabular-nums; color: var(--tinta);
   transition: scale .1s var(--salida), background-color .1s var(--salida);
@@ -589,7 +606,9 @@ a.btn { text-decoration: none; }
   .pantalla-conv { font-size: 15.5px; }
   .vista-calc { gap: 10px; }
   .teclado { gap: 7px; }
-  .tecla { height: clamp(44px, calc((100svh - 372px) / 5), 60px); border-radius: 18px; }
+  .tecla { border-radius: 18px; }
+  .calc-tasa { margin-top: 6px; }
+  .calc-tasa .btn-chico { min-height: 36px; }
 }
 
 /* ------------------------------------------------------------- precios */

@@ -180,6 +180,15 @@
     return DIAS[f.getDay()].slice(0, 3) + ' ' + f.getDate() + ' ' + MESES[f.getMonth()].slice(0, 3);
   }
 
+  /** "2024-03-15" → "15 mar 2024"; si es del año de hoyISO, sin año: "6 nov". */
+  function fechaBreve(iso, hoyISO) {
+    var f = fechaLocalDeISO(iso);
+    if (isNaN(f)) return '';
+    var txt = f.getDate() + ' ' + MESES[f.getMonth()].slice(0, 3);
+    if (!hoyISO || String(hoyISO).slice(0, 4) !== String(iso).slice(0, 4)) txt += ' ' + f.getFullYear();
+    return txt;
+  }
+
   /** Fecha de hoy en Caracas como "AAAA-MM-DD". */
   function hoyCaracas(ahora) {
     var d = ahora || new Date();
@@ -499,7 +508,7 @@
     partirTasa: partirTasa, leerNumero: leerNumero, formatearEntrada: formatearEntrada,
     normalizarTelefono: normalizarTelefono, mostrarTelefono: mostrarTelefono,
     llenarPlantilla: llenarPlantilla, enlaceWhatsApp: enlaceWhatsApp,
-    fechaLarga: fechaLarga, fechaCorta: fechaCorta, hoyCaracas: hoyCaracas, claveDia: claveDia,
+    fechaLarga: fechaLarga, fechaCorta: fechaCorta, fechaBreve: fechaBreve, hoyCaracas: hoyCaracas, claveDia: claveDia,
     hora12: hora12, fechaNumerica: fechaNumerica, haceCuanto: haceCuanto,
     unirHistorial: unirHistorial, leerHistorico: leerHistorico, leerOficial: leerOficial,
     resumenTasa: resumenTasa, textoCambio: textoCambio,
